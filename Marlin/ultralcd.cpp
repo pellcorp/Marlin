@@ -1866,6 +1866,9 @@ void lcd_quick_feedback(const bool clear_buttons) {
      */
     static int8_t bed_corner;
     void _lcd_goto_next_corner() {
+      if (!all_axes_homed())
+        return;
+
       line_to_z(LEVEL_CORNERS_Z_HOP);
       switch (bed_corner) {
         case 0:
@@ -1914,7 +1917,8 @@ void lcd_quick_feedback(const bool clear_buttons) {
       defer_return_to_status = true;
       lcd_goto_screen(_lcd_corner_submenu);
       bed_corner = 0;
-      _lcd_goto_next_corner();
+      axis_homed = 0;
+      enqueue_and_echo_commands_P(PSTR("G28"));
     }
 
   #endif // LEVEL_BED_CORNERS
@@ -2747,8 +2751,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
     #endif
 
     #if ENABLED(LEVEL_BED_CORNERS) && DISABLED(LCD_BED_LEVELING)
-      if (all_axes_homed())
-        MENU_ITEM(function, MSG_LEVEL_CORNERS, _lcd_level_bed_corners);
+      MENU_ITEM(function, MSG_LEVEL_CORNERS, _lcd_level_bed_corners);
     #endif
 
     #if HAS_M206_COMMAND && DISABLED(SLIM_LCD_MENUS)
